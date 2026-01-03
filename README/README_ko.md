@@ -1,6 +1,6 @@
-# <img src="./README/app-icon.svg" width="24" height="24">  MoAI SSH・SFTP
+# <img src="./app-icon.svg" width="24" height="24">  MoAI SSH・SFTP
 
-한국어 | [English](README.md)
+한국어 | [English](../README.md)
 
 크로스 플랫폼을 지원하는 SSH 및 SFTP 클라이언트
 
@@ -11,16 +11,16 @@
 
 ### Screenshot - Desktop
 <div align="left">
-  <img src="./README/mac2.png" alt="macos" style="width:48%; height:auto;">
-  <img src="./README/mac3.png" alt="macos" style="width:48%; height:auto;">
+  <img src="./mac2.png" alt="macos" style="width:48%; height:auto;">
+  <img src="./mac3.png" alt="macos" style="width:48%; height:auto;">
 </div>
 
 ### Screenshot - Mobile
 <div align="left">
-  <img src="./README/ios1.png" alt="ios" style="width:24%; height:auto;">
-  <img src="./README/android.png" alt="android" style="width:24%; height:auto;">
-  <img src="./README/ios2.jpg" alt="ios" style="width:24%; height:auto;">
-  <img src="./README/ios3.jpg" alt="ios" style="width:24%; height:auto;">
+  <img src="./ios1.png" alt="ios" style="width:24%; height:auto;">
+  <img src="./android.png" alt="android" style="width:24%; height:auto;">
+  <img src="./ios2.jpg" alt="ios" style="width:24%; height:auto;">
+  <img src="./ios3.jpg" alt="ios" style="width:24%; height:auto;">
 <div>
 
 ## 주요 기능

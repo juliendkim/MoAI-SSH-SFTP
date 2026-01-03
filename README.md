@@ -1,6 +1,6 @@
 # <img src="./README/app-icon.svg" width="24" height="24"> MoAI SSH・SFTP
 
-[한국어](README_ko.md) | English
+[한국어](./README/README_ko.md) | English
 
 A cross-platform SSH and SFTP client
 
