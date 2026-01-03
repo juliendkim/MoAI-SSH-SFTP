@@ -1,0 +1,273 @@
+{
+  "appTitle": "MoAI SSH/SFTP",
+  "noHostsConfigured": "No hosts configured",
+  "addHost": "Add Host",
+  "deleteHostTitle": "Delete Host",
+  "deleteHostContent": "Are you sure you want to delete \"{name}\"?",
+  "@deleteHostContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "ssh": "SSH",
+  "sftp": "SFTP",
+  "hostName": "Name",
+  "hostHostname": "Hostname",
+  "hostPort": "Port",
+  "hostUsername": "Username",
+  "hostAuthType": "Auth Type",
+  "hostKeyFile": "Key File",
+  "addNewHost": "Add New Host",
+  "editHost": "Edit Host",
+  "labelName": "Name",
+  "labelHostname": "Hostname/IP",
+  "labelPort": "Port",
+  "labelUsername": "Username",
+  "labelPassword": "Password",
+  "labelKeyFilePath": "Key File Path",
+  "labelOS": "Operating System",
+  "labelAuthType": "Authentication Type",
+  "validatorName": "Please enter a name",
+  "validatorHostname": "Please enter a hostname",
+  "validatorPort": "Please enter a port",
+  "validatorPortRange": "Please enter a valid port (1-65535)",
+  "validatorUsername": "Please enter a username",
+  "validatorPassword": "Please enter a password",
+  "validatorKeyFile": "Please select a key file",
+  "save": "Save",
+  "reselectKeyFile": "Please re-select your SSH key file for security",
+  "failedToReadKeyFile": "Failed to read key file: {error}",
+  "@failedToReadKeyFile": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "hideHiddenFiles": "Hide hidden files",
+  "showHiddenFiles": "Show hidden files",
+  "connectingTo": "Connecting to {host}...",
+  "@connectingTo": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "connectedSuccessfully": "Connected successfully!",
+  "connectionFailed": "Connection failed: {error}",
+  "@connectionFailed": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "retry": "Retry",
+  "local": "Local",
+  "remote": "Remote - {host}",
+  "@remote": {
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "newFolder": "New Folder",
+  "upload": "Upload",
+  "download": "Download",
+  "rename": "Rename",
+  "copy": "Copy",
+  "move": "Move",
+  "folderConflict": "Folder Conflict",
+  "fileConflict": "File Conflict",
+  "conflictContent": "{type} \"{name}\" already exists.",
+  "@conflictContent": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "conflictQuestion": "How would you like to proceed?",
+  "merge": "Merge",
+  "overwrite": "Overwrite",
+  "skip": "Skip",
+  "transferComplete": "{operation} Complete",
+  "@transferComplete": {
+    "placeholders": {
+      "operation": {
+        "type": "String"
+      }
+    }
+  },
+  "filesCount": "Files: {count}",
+  "@filesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "foldersCount": "Folders: {count}",
+  "@foldersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "size": "Size: {size}",
+  "@size": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "time": "Time: {time}",
+  "@time": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadFailed": "Download failed: {error}",
+  "@downloadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "uploadFailed": "Upload failed: {error}",
+  "@uploadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "deleted": "Deleted {name}",
+  "@deleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteFailed": "Delete failed: {error}",
+  "@deleteFailed": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "copiedItems": "Copied {count} items",
+  "@copiedItems": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "copyFailed": "Copy failed: {error}",
+  "@copyFailed": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "copyTo": "Copy To",
+  "moveTo": "Move To",
+  "destinationPath": "Destination Path",
+  "enterDestinationPath": "Enter destination directory path",
+  "createFolder": "Create Folder",
+  "folderName": "Folder Name",
+  "enterFolderName": "Enter new folder name",
+  "create": "Create",
+  "renameTitle": "Rename",
+  "newName": "New Name",
+  "enterNewName": "Enter new name",
+  "failedToCreateDirectory": "Failed to create directory: {error}",
+  "@failedToCreateDirectory": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "failedToRename": "Failed to rename: {error}",
+  "@failedToRename": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "folder": "Folder",
+  "file": "File",
+  "uploadFileTitle": "Upload File",
+  "uploadFileContent": "Upload \"{name}\" to remote directory?",
+  "@uploadFileContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadFileTitle": "Download File",
+  "downloadFileContent": "Download \"{name}\" to local directory?",
+  "@downloadFileContent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "itemsSelected": "{count} items",
+  "@itemsSelected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "durationMinSec": "{minutes}m {seconds}s",
+  "@durationMinSec": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "durationSec": "{seconds}s",
+  "@durationSec": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "listingFailed": "Failed to load files: {error}",
+  "@listingFailed": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  }
+}
