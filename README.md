@@ -67,8 +67,8 @@ Before building the project, ensure you have the following installed:
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
-cd moai_ssh_sftp_client
+git clone git@github.com:juliendkim/MoAI-SSH-SFTP.git
+cd MoAI-SSH-SFTP
 ```
 
 ### 2. Install Dependencies

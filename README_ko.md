@@ -67,8 +67,8 @@
 ### 1. 저장소 복제
 
 ```bash
-git clone <repository-url>
-cd moai_ssh_sftp_client
+git clone git@github.com:juliendkim/MoAI-SSH-SFTP.git
+cd MoAI-SSH-SFTP
 ```
 
 ### 2. 의존성 설치
