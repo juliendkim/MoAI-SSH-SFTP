@@ -195,6 +195,9 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
     }
   }
 
+  /// Loads the list of files and directories in the current local directory.
+  ///
+  /// Displays an error message if the listing fails.
   Future<void> _loadLocalFiles() async {
     try {
       // Ensure local path is set to home directory if empty
@@ -223,6 +226,9 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
     }
   }
 
+  /// Loads the list of files and directories in the current remote directory.
+  ///
+  /// Displays an error message if the listing fails.
   Future<void> _loadRemoteFiles() async {
     try {
       final files = await _sftpService.listDirectory(_remotePath);
@@ -242,6 +248,10 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
     }
   }
 
+  /// Navigates to a specific local directory.
+  ///
+  /// On Android and iOS, prevents navigation above the root path for security.
+  /// Clears any file selections and auto-scrolls the breadcrumb to show the end of the path.
   Future<void> _navigateLocal(String path) async {
     if (!mounted) return;
 
@@ -301,6 +311,9 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
     });
   }
 
+  /// Shows a confirmation dialog before downloading a file from the remote server.
+  ///
+  /// If confirmed, initiates the download process.
   Future<void> _confirmDownloadFile(SftpFileInfo file) async {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
@@ -485,6 +498,9 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
     }
   }
 
+  /// Downloads multiple selected files and directories from the remote server.
+  ///
+  /// Handles conflicts and tracks transfer progress across all selected items.
   Future<void> _downloadMultipleFiles(List<SftpFileInfo> files) async {
     try {
       setState(() {
@@ -604,6 +620,8 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
   }
 
   /// Downloads contents of a directory using a queue to avoid recursion depth issues.
+  ///
+  /// Processes directories breadth-first to prevent stack overflow on deep directory structures.
   Future<void> _downloadWithQueue(String remotePath, String localPath) async {
     final queue = <Map<String, String>>[];
     queue.add({'remote': remotePath, 'local': localPath});
@@ -701,6 +719,9 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
     }
   }
 
+  /// Shows a confirmation dialog before uploading a file to the remote server.
+  ///
+  /// If confirmed, initiates the upload process.
   Future<void> _confirmUploadFile(FileSystemEntity file) async {
     final l10n = AppLocalizations.of(context)!;
     final fileName = file.path.split('/').last;
@@ -921,7 +942,10 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
     }
   }
 
-  Future<void> _uploadDirectoryRecursive(String localPath, String remotePath) async {
+  /// Recursively uploads a local directory and all its contents to the remote server.
+  ///
+  /// Creates remote directories as needed and uploads all files with progress tracking.
+  Future<void> _uploadDirectoryRecursive(String localPath, String remotePath) async{
     final dir = Directory(localPath);
     final entities = await dir.list().toList();
 
@@ -1860,6 +1884,9 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
     );
   }
 
+  /// Formats a byte count into a human-readable file size string.
+  ///
+  /// Returns sizes in B, KB, MB, or GB depending on the magnitude.
   String _formatFileSize(int bytes) {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
@@ -1869,6 +1896,9 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
   }
 
+  /// Formats a transfer rate in bytes per second into a human-readable string.
+  ///
+  /// Returns rates in B/s, KB/s, or MB/s depending on the magnitude.
   String _formatTransferRate(double bytesPerSecond) {
     if (bytesPerSecond < 1024) {
       return '${bytesPerSecond.toStringAsFixed(0)} B/s';
@@ -1879,7 +1909,9 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
     }
   }
 
-  // Local file actions
+  /// Uploads all currently selected local files and directories to the remote server.
+  ///
+  /// Handles both individual files and directories with their contents.
   Future<void> _uploadSelectedFiles() async {
     final selectedFiles = _localFiles
         .where((f) => _selectedLocalFiles.contains(f.path))
@@ -2746,6 +2778,10 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
     );
   }
 
+  /// Handles file or directory naming conflicts during transfer operations.
+  ///
+  /// Shows a dialog with options: merge (directories only), overwrite, rename, or skip.
+  /// Returns the user's choice as a string, or applies a previously chosen "apply to all" option.
   Future<String?> _handleConflict(String itemName, bool isDirectory, bool isDownload) async {
     // If user already chose an option for all items, apply it
     if (_conflictResolutionChoice != null) {
@@ -2801,6 +2837,9 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
     return 'skip'; // Default to skip if dialog is dismissed
   }
 
+  /// Generates a unique filename by appending a number if the file already exists locally.
+  ///
+  /// For example, "file.txt" becomes "file (1).txt", "file (2).txt", etc.
   String _getUniqueFileName(String basePath, String fileName) {
     final lastDot = fileName.lastIndexOf('.');
     String nameWithoutExt;
@@ -2827,6 +2866,10 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
     return newFileName;
   }
 
+  /// Generates a unique filename by appending a number if the file already exists on the remote server.
+  ///
+  /// For example, "file.txt" becomes "file (1).txt", "file (2).txt", etc.
+  /// Returns the original filename if remote listing fails.
   Future<String?> _getUniqueRemoteFileName(String basePath, String fileName) async {
     final lastDot = fileName.lastIndexOf('.');
     String nameWithoutExt;
@@ -2855,6 +2898,10 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
     }
   }
 
+  /// Displays a summary panel showing transfer statistics after an upload or download completes.
+  ///
+  /// Shows the number of files/folders transferred, total size, and elapsed time.
+  /// Auto-hides after 5 seconds.
   void _showTransferStatistics(String operation, Duration elapsed) {
     setState(() {
       _transferOperation = operation;
@@ -2872,6 +2919,9 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
     });
   }
 
+  /// Formats a duration into a human-readable string.
+  ///
+  /// Returns a localized string with minutes and seconds, or just seconds if less than a minute.
   String _formatDuration(Duration duration) {
     final l10n = AppLocalizations.of(context)!;
     final seconds = duration.inSeconds;
@@ -2885,6 +2935,10 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
     }
   }
 
+  /// Builds the breadcrumb navigation widget for the local file system.
+  ///
+  /// Shows the current path as a series of clickable segments, allowing quick navigation
+  /// to parent directories. Supports both mobile and desktop layouts.
   Widget _buildLocalBreadcrumb() {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
@@ -2961,6 +3015,10 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
     );
   }
 
+  /// Builds the breadcrumb navigation widget for the remote file system.
+  ///
+  /// Shows the current remote path as a series of clickable segments, allowing quick navigation
+  /// to parent directories on the remote server.
   Widget _buildRemoteBreadcrumb() {
     final theme = Theme.of(context);
     List<Widget> breadcrumbs = [];

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import '../services/file_access_service.dart';
 
-/// macOS 디렉토리 접근 예제 위젯
+/// Example widget demonstrating macOS directory access functionality.
+///
+/// Provides UI for testing file/directory picking, permission requests,
+/// and listing system directories.
 class FileAccessExample extends StatefulWidget {
+  /// Creates a [FileAccessExample] widget.
   const FileAccessExample({super.key});
 
   @override
@@ -10,7 +14,7 @@ class FileAccessExample extends StatefulWidget {
 }
 
 class _FileAccessExampleState extends State<FileAccessExample> {
-  String _statusMessage = '준비됨';
+  String _statusMessage = 'Ready';
   Map<String, String> _systemDirectories = {};
 
   @override
@@ -19,53 +23,58 @@ class _FileAccessExampleState extends State<FileAccessExample> {
     _loadSystemDirectories();
   }
 
+  /// Loads the system directories and updates the status.
   Future<void> _loadSystemDirectories() async {
     final directories = await FileAccessService.getSystemDirectories();
     setState(() {
       _systemDirectories = directories;
-      _statusMessage = '시스템 디렉토리 로드 완료';
+      _statusMessage = 'System directories loaded';
     });
   }
 
+  /// Prompts the user to pick a directory and displays the result.
   Future<void> _pickDirectory() async {
     final path = await FileAccessService.pickDirectory();
     setState(() {
       if (path != null) {
-        _statusMessage = '선택된 디렉토리: $path';
+        _statusMessage = 'Selected directory: $path';
       } else {
-        _statusMessage = '디렉토리 선택 취소됨';
+        _statusMessage = 'Directory selection cancelled';
       }
     });
   }
 
+  /// Prompts the user to pick a file and displays the result.
   Future<void> _pickFile() async {
     final path = await FileAccessService.pickSingleFile();
     setState(() {
       if (path != null) {
-        _statusMessage = '선택된 파일: $path';
+        _statusMessage = 'Selected file: $path';
       } else {
-        _statusMessage = '파일 선택 취소됨';
+        _statusMessage = 'File selection cancelled';
       }
     });
   }
 
+  /// Prompts the user to pick multiple files and displays the result.
   Future<void> _pickMultipleFiles() async {
     final paths = await FileAccessService.pickFiles();
     setState(() {
       if (paths != null && paths.isNotEmpty) {
-        _statusMessage = '선택된 파일 ${paths.length}개:\n${paths.join('\n')}';
+        _statusMessage = 'Selected ${paths.length} files:\n${paths.join('\n')}';
       } else {
-        _statusMessage = '파일 선택 취소됨';
+        _statusMessage = 'File selection cancelled';
       }
     });
   }
 
+  /// Checks access to a directory and displays the result.
   Future<void> _checkAccess(String path) async {
     setState(() {
-      _statusMessage = '$path 접근 시도 중...';
+      _statusMessage = 'Attempting to access $path...';
     });
 
-    // 권한 자동 요청하며 디렉토리 나열
+    // List directory with automatic permission request
     final entities = await FileAccessService.listDirectoryWithPermission(
       path,
       autoRequestPermission: true,
@@ -73,21 +82,22 @@ class _FileAccessExampleState extends State<FileAccessExample> {
 
     setState(() {
       if (entities.isNotEmpty) {
-        _statusMessage = '$path 접근 성공!\n${entities.length}개 항목 발견';
+        _statusMessage = 'Access successful to $path!\nFound ${entities.length} items';
       } else {
-        _statusMessage = '$path 빈 디렉토리 또는 접근 실패';
+        _statusMessage = '$path is empty or access failed';
       }
     });
   }
 
+  /// Requests directory access permission and displays the result.
   Future<void> _requestDirectoryAccess() async {
     final result = await FileAccessService.requestDirectoryAccessMacOS();
 
     setState(() {
       if (result != null) {
-        _statusMessage = '권한 획득 성공!\n경로: ${result['path']}\n북마크: ${result['bookmarkKey']}';
+        _statusMessage = 'Permission granted!\nPath: ${result['path']}\nBookmark: ${result['bookmarkKey']}';
       } else {
-        _statusMessage = '권한 요청 취소됨';
+        _statusMessage = 'Permission request cancelled';
       }
     });
   }
@@ -96,14 +106,14 @@ class _FileAccessExampleState extends State<FileAccessExample> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('macOS 디렉토리 접근 예제'),
+        title: const Text('macOS Directory Access Example'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 상태 메시지
+            // Status message
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -115,38 +125,38 @@ class _FileAccessExampleState extends State<FileAccessExample> {
             ),
             const SizedBox(height: 16),
 
-            // 버튼들
+            // Action buttons
             ElevatedButton.icon(
               onPressed: _requestDirectoryAccess,
               icon: const Icon(Icons.security),
-              label: const Text('디렉토리 권한 요청 (macOS)'),
+              label: const Text('Request Directory Permission (macOS)'),
             ),
             const SizedBox(height: 8),
 
             ElevatedButton.icon(
               onPressed: _pickDirectory,
               icon: const Icon(Icons.folder_open),
-              label: const Text('디렉토리 선택'),
+              label: const Text('Select Directory'),
             ),
             const SizedBox(height: 8),
 
             ElevatedButton.icon(
               onPressed: _pickFile,
               icon: const Icon(Icons.insert_drive_file),
-              label: const Text('파일 선택'),
+              label: const Text('Select File'),
             ),
             const SizedBox(height: 8),
 
             ElevatedButton.icon(
               onPressed: _pickMultipleFiles,
               icon: const Icon(Icons.file_copy),
-              label: const Text('여러 파일 선택'),
+              label: const Text('Select Multiple Files'),
             ),
             const SizedBox(height: 16),
 
-            // 시스템 디렉토리 목록
+            // System directories list
             const Text(
-              '시스템 디렉토리:',
+              'System Directories:',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -169,7 +179,7 @@ class _FileAccessExampleState extends State<FileAccessExample> {
                       trailing: IconButton(
                         icon: const Icon(Icons.check_circle_outline),
                         onPressed: () => _checkAccess(entry.value),
-                        tooltip: '접근 권한 확인',
+                        tooltip: 'Check access permission',
                       ),
                     ),
                   );

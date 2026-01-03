@@ -4,19 +4,30 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// macOS 디렉토리 접근을 위한 서비스
+/// Service for macOS directory access with security-scoped bookmarks.
+///
+/// Provides methods for requesting directory permissions, listing files,
+/// and picking files/directories while handling macOS sandbox restrictions.
 class FileAccessService {
   static const MethodChannel _channel = MethodChannel('com.moai.ssh_sftp/file_access');
 
-  /// 디렉토리 내용 나열 (macOS 권한 자동 처리)
+  /// Lists directory contents with automatic permission handling for macOS.
+  ///
+  /// On macOS, requests directory access permissions automatically if needed.
+  /// On other platforms, performs standard directory listing.
+  ///
+  /// [path] The directory path to list.
+  /// [autoRequestPermission] If true, automatically shows permission dialog on access denied.
+  ///
+  /// Returns a list of [FileSystemEntity] objects representing files and directories.
   static Future<List<FileSystemEntity>> listDirectoryWithPermission(
     String path, {
     bool autoRequestPermission = true,
   }) async {
-    print('[Dart] listDirectoryWithPermission 호출: $path');
+    print('[Dart] listDirectoryWithPermission called: $path');
 
     if (!Platform.isMacOS) {
-      print('[Dart] macOS 아님 - 일반 방식 사용');
+      print('[Dart] Not macOS - using standard approach');
       try {
         final directory = Directory(path);
         if (!await directory.exists()) {
@@ -24,23 +35,23 @@ class FileAccessService {
         }
         return await directory.list().toList();
       } catch (e) {
-        print('[Dart] 디렉토리 나열 실패: $e');
+        print('[Dart] Directory listing failed: $e');
         return [];
       }
     }
 
-    // macOS: 네이티브 메서드 호출
+    // macOS: Call native method
     try {
-      print('[Dart] 네이티브 listDirectory 호출 중...');
+      print('[Dart] Calling native listDirectory...');
       final result = await _channel.invokeMethod('listDirectory', {
         'path': path,
       });
 
-      print('[Dart] 네이티브 응답: $result');
+      print('[Dart] Native response: $result');
 
       if (result is Map && result['success'] == true) {
         final items = result['items'] as List;
-        print('[Dart] 성공: ${items.length}개 항목');
+        print('[Dart] Success: ${items.length} items');
         return items.map((item) {
           final isDir = item['isDirectory'] as bool;
           final itemPath = item['path'] as String;
@@ -48,40 +59,40 @@ class FileAccessService {
         }).toList();
       }
 
-      print('[Dart] 성공 플래그 없음');
+      print('[Dart] No success flag');
       return [];
     } on PlatformException catch (e) {
-      print('[Dart] PlatformException 발생: ${e.code} - ${e.message}');
+      print('[Dart] PlatformException occurred: ${e.code} - ${e.message}');
 
-      // PERMISSION_DENIED 에러인 경우 권한 요청
+      // Request permission if PERMISSION_DENIED error
       if (e.code == 'PERMISSION_DENIED' && autoRequestPermission) {
-        print('[Dart] 권한 없음 - 권한 요청 다이얼로그 표시');
+        print('[Dart] Permission denied - showing permission dialog');
 
         final accessResult = await requestDirectoryAccessMacOS(suggestedPath: path);
 
         if (accessResult != null) {
-          print('[Dart] 권한 획득 성공 - 재시도');
-          // 재시도 (무한 재귀 방지)
+          print('[Dart] Permission granted - retrying');
+          // Retry (prevent infinite recursion)
           return await listDirectoryWithPermission(path, autoRequestPermission: false);
         } else {
-          print('[Dart] 권한 요청 취소됨');
+          print('[Dart] Permission request cancelled');
           return [];
         }
       }
 
-      print('[Dart] 다른 에러 또는 자동 요청 비활성화');
+      print('[Dart] Other error or auto request disabled');
       return [];
     } catch (e) {
-      print('[Dart] 예상치 못한 에러: $e');
+      print('[Dart] Unexpected error: $e');
 
-      // 혹시 모를 권한 오류
+      // Handle potential permission error
       if (autoRequestPermission && e.toString().toLowerCase().contains('permission')) {
-        print('[Dart] 권한 관련 에러 감지 - 권한 요청');
+        print('[Dart] Permission-related error detected - requesting permission');
 
         final accessResult = await requestDirectoryAccessMacOS(suggestedPath: path);
 
         if (accessResult != null) {
-          print('[Dart] 권한 획득 성공 - 재시도');
+          print('[Dart] Permission granted - retrying');
           return await listDirectoryWithPermission(path, autoRequestPermission: false);
         }
       }
@@ -90,30 +101,37 @@ class FileAccessService {
     }
   }
 
-  /// 디렉토리 접근 권한 요청 (macOS 전용)
+  /// Requests directory access permission (macOS only).
+  ///
+  /// Shows a directory picker dialog to the user and stores a security-scoped
+  /// bookmark for future access.
+  ///
+  /// [suggestedPath] An optional path to suggest to the user in the picker dialog.
+  ///
+  /// Returns a map containing 'path' and 'bookmarkKey' on success, or null if cancelled.
   static Future<Map<String, dynamic>?> requestDirectoryAccessMacOS({String? suggestedPath}) async {
     if (!Platform.isMacOS) {
       return null;
     }
 
-    print('[Dart] requestDirectoryAccessMacOS 호출: $suggestedPath');
+    print('[Dart] requestDirectoryAccessMacOS called: $suggestedPath');
 
     try {
       final result = await _channel.invokeMethod('requestDirectoryAccess', {
         'suggestedPath': suggestedPath,
       });
 
-      print('[Dart] requestDirectoryAccess 응답: $result');
+      print('[Dart] requestDirectoryAccess response: $result');
 
       if (result is Map && result['success'] == true) {
         final path = result['path'] as String;
         final bookmarkKey = result['bookmarkKey'] as String;
 
-        // SharedPreferences에 저장
+        // Save to SharedPreferences
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('bookmark_key_$path', bookmarkKey);
 
-        print('[Dart] 권한 획득 및 북마크 저장 완료');
+        print('[Dart] Permission granted and bookmark saved');
 
         return {
           'path': path,
@@ -121,29 +139,35 @@ class FileAccessService {
         };
       }
 
-      print('[Dart] 권한 요청 취소됨');
+      print('[Dart] Permission request cancelled');
       return null;
     } catch (e) {
-      print('[Dart] requestDirectoryAccessMacOS 에러: $e');
+      print('[Dart] requestDirectoryAccessMacOS error: $e');
       return null;
     }
   }
 
-  /// 사용자에게 디렉토리 선택을 요청하고 경로를 반환
+  /// Prompts the user to select a directory and returns the path.
+  ///
+  /// Returns the selected directory path, or null if cancelled.
   static Future<String?> pickDirectory() async {
     try {
       String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
       if (selectedDirectory != null) {
-        print('선택된 디렉토리: $selectedDirectory');
+        print('Selected directory: $selectedDirectory');
       }
       return selectedDirectory;
     } catch (e) {
-      print('디렉토리 선택 중 오류 발생: $e');
+      print('Error selecting directory: $e');
       return null;
     }
   }
 
-  /// 여러 파일을 선택하고 경로 목록을 반환
+  /// Prompts the user to select multiple files and returns their paths.
+  ///
+  /// [allowedExtensions] Optional list of file extensions to filter (e.g., ['pdf', 'txt']).
+  ///
+  /// Returns a list of selected file paths, or null if cancelled.
   static Future<List<String>?> pickFiles({List<String>? allowedExtensions}) async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -154,18 +178,22 @@ class FileAccessService {
 
       if (result != null) {
         List<String> paths = result.paths.whereType<String>().toList();
-        print('선택된 파일 개수: ${paths.length}');
+        print('Selected file count: ${paths.length}');
         return paths;
       }
 
       return null;
     } catch (e) {
-      print('파일 선택 중 오류 발생: $e');
+      print('Error selecting files: $e');
       return null;
     }
   }
 
-  /// 단일 파일을 선택하고 경로를 반환
+  /// Prompts the user to select a single file and returns its path.
+  ///
+  /// [allowedExtensions] Optional list of file extensions to filter (e.g., ['pdf', 'txt']).
+  ///
+  /// Returns the selected file path, or null if cancelled.
   static Future<String?> pickSingleFile({List<String>? allowedExtensions}) async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -175,18 +203,23 @@ class FileAccessService {
 
       if (result != null && result.files.single.path != null) {
         String path = result.files.single.path!;
-        print('선택된 파일: $path');
+        print('Selected file: $path');
         return path;
       }
 
       return null;
     } catch (e) {
-      print('파일 선택 중 오류 발생: $e');
+      print('Error selecting file: $e');
       return null;
     }
   }
 
-  /// 시스템 디렉토리 경로들을 반환
+  /// Returns paths to common system directories.
+  ///
+  /// Includes home, desktop, documents, downloads, pictures, music, movies,
+  /// temp, and application support directories.
+  ///
+  /// Returns a map with directory names as keys and paths as values.
   static Future<Map<String, String>> getSystemDirectories() async {
     Map<String, String> directories = {};
 
@@ -215,27 +248,31 @@ class FileAccessService {
         }
       }
     } catch (e) {
-      print('시스템 디렉토리 경로 가져오기 오류: $e');
+      print('Error getting system directory paths: $e');
     }
 
     return directories;
   }
 
-  /// 파일이나 디렉토리를 저장할 위치를 선택
+  /// Prompts the user to select a save location for a file or directory.
+  ///
+  /// [suggestedFileName] Optional filename to suggest in the save dialog.
+  ///
+  /// Returns the selected save path, or null if cancelled.
   static Future<String?> pickSaveLocation({String? suggestedFileName}) async {
     try {
       String? outputFile = await FilePicker.platform.saveFile(
-        dialogTitle: '저장 위치 선택',
+        dialogTitle: 'Select save location',
         fileName: suggestedFileName,
       );
 
       if (outputFile != null) {
-        print('저장 경로: $outputFile');
+        print('Save path: $outputFile');
       }
 
       return outputFile;
     } catch (e) {
-      print('저장 위치 선택 중 오류 발생: $e');
+      print('Error selecting save location: $e');
       return null;
     }
   }
