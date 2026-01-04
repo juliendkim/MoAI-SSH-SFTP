@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:moai_ssh_sftp_client/l10n/generated/app_localizations.dart';
+import '../l10n/generated/app_localizations.dart';
 import 'providers/host_provider.dart';
 import 'screens/home_screen.dart';
 

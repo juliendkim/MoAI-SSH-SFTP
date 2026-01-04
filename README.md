@@ -1,6 +1,6 @@
-# <img src="./README/app-icon.svg" width="24" height="24"> MoAI SSH・SFTP
+# <img src="./assets/app-icon.svg" width="24" height="24"> MoAI SSH・SFTP
 
-[한국어](./README/README_ko.md) | English
+[한국어](./README_ko.md) | English
 
 A cross-platform SSH and SFTP client
 
@@ -11,16 +11,16 @@ A cross-platform SSH and SFTP client
 
 ### Screenshot - Desktop
 <div align="left">
-  <img src="./README/mac2.png" alt="macos" style="width:48%; height:auto;">
-  <img src="./README/mac3.png" alt="macos" style="width:48%; height:auto;">
+  <img src="./assets/mac2.png" alt="macos" style="width:48%; height:auto;">
+  <img src="./assets/mac3.png" alt="macos" style="width:48%; height:auto;">
 </div>
 
 ### Screenshot - Mobile
 <div align="left">
-  <img src="./README/ios1.png" alt="ios" style="width:24%; height:auto;">
-  <img src="./README/android.png" alt="android" style="width:24%; height:auto;">
-  <img src="./README/ios2.jpg" alt="ios" style="width:24%; height:auto;">
-  <img src="./README/ios3.jpg" alt="ios" style="width:24%; height:auto;">
+  <img src="./assets/ios1.png" alt="ios" style="width:24%; height:auto;">
+  <img src="./assets/android.png" alt="android" style="width:24%; height:auto;">
+  <img src="./assets/ios2.jpg" alt="ios" style="width:24%; height:auto;">
+  <img src="./assets/ios3.jpg" alt="ios" style="width:24%; height:auto;">
 <div>
 
 ## Features
@@ -221,4 +221,4 @@ lib/
 
 ## License
 
-MIT License - see the [LICENSE](LICENSE) file for details
+MIT License - see the [LICENSE](./LICENSE) file for details

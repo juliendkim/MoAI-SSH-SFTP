@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:xterm/xterm.dart';
 import 'package:dartssh2/dartssh2.dart';
-import 'package:moai_ssh_sftp_client/l10n/generated/app_localizations.dart';
+import '../l10n/generated/app_localizations.dart';
 import '../models/host.dart';
 import '../services/ssh_service.dart';
 

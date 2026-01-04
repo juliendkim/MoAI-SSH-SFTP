@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:moai_ssh_sftp_client/l10n/generated/app_localizations.dart';
+import '../l10n/generated/app_localizations.dart';
 import '../models/host.dart';
 import '../providers/host_provider.dart';
 import '../widgets/host_card.dart';
@@ -189,7 +189,17 @@ class _HomeScreenState extends State<HomeScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.appTitle),
+        title: Row(
+          children: [
+            Image.asset(
+              'assets/app-icon.png',
+              width: 32,
+              height: 32,
+            ),
+            const SizedBox(width: 16),
+            Text(l10n.appTitle),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),

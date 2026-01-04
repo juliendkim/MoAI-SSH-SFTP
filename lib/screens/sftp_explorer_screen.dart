@@ -2,7 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:moai_ssh_sftp_client/l10n/generated/app_localizations.dart';
+import 'package:file_picker/file_picker.dart';
+import '../l10n/generated/app_localizations.dart';
 import '../models/host.dart';
 import '../services/ssh_service.dart';
 import '../services/sftp_service.dart';
@@ -165,11 +166,50 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
         _localRootPath = downloads?.path ?? (await getApplicationDocumentsDirectory()).path;
         initialLocalPath = _localRootPath;
       } else {
-        // Desktop
-        initialLocalPath = Platform.environment['HOME'] ??
-                        Platform.environment['USERPROFILE'] ??
-                        '';
-        _localRootPath = initialLocalPath;
+        // Desktop (macOS/Windows/Linux)
+        // For macOS sandboxed apps, we MUST request user permission to access directories
+        if (Platform.isMacOS) {
+          // Show dialog to inform user about folder selection
+          if (!mounted) return;
+
+          final shouldSelect = await showDialog<bool>(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => AlertDialog(
+              title: Text(l10n.fileAccessRequired),
+              content: Text(l10n.fileAccessRequiredMessage),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Text(l10n.selectFolder),
+                ),
+              ],
+            ),
+          );
+
+          if (shouldSelect != true) {
+            throw Exception(l10n.fileAccessDenied);
+          }
+
+          // Request directory access using file_picker
+          final selectedDirectory = await FilePicker.platform.getDirectoryPath(
+            dialogTitle: l10n.selectLocalFolder,
+            lockParentWindow: true,
+          );
+
+          if (selectedDirectory == null || selectedDirectory.isEmpty) {
+            throw Exception(l10n.noFolderSelected);
+          }
+
+          initialLocalPath = selectedDirectory;
+          _localRootPath = selectedDirectory;
+        } else {
+          // Windows/Linux: Use home directory
+          initialLocalPath = Platform.environment['HOME'] ??
+                          Platform.environment['USERPROFILE'] ??
+                          '';
+          _localRootPath = initialLocalPath;
+        }
       }
       _localPath = initialLocalPath;
 

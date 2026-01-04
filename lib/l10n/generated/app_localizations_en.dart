@@ -328,4 +328,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String listingFailed(Object error) {
     return 'Failed to load files: $error';
   }
+
+  @override
+  String get fileAccessRequired => 'File Access Required';
+
+  @override
+  String get fileAccessRequiredMessage =>
+      'This app needs permission to access your files for local file browsing. Please select a folder to grant access.';
+
+  @override
+  String get selectFolder => 'Select Folder';
+
+  @override
+  String get selectLocalFolder => 'Select Local Folder';
+
+  @override
+  String get fileAccessDenied => 'File access was denied';
+
+  @override
+  String get noFolderSelected => 'No folder was selected';
 }

@@ -637,6 +637,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to load files: {error}'**
   String listingFailed(Object error);
+
+  /// No description provided for @fileAccessRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'File Access Required'**
+  String get fileAccessRequired;
+
+  /// No description provided for @fileAccessRequiredMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This app needs permission to access your files for local file browsing. Please select a folder to grant access.'**
+  String get fileAccessRequiredMessage;
+
+  /// No description provided for @selectFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Folder'**
+  String get selectFolder;
+
+  /// No description provided for @selectLocalFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Local Folder'**
+  String get selectLocalFolder;
+
+  /// No description provided for @fileAccessDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'File access was denied'**
+  String get fileAccessDenied;
+
+  /// No description provided for @noFolderSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'No folder was selected'**
+  String get noFolderSelected;
 }
 
 class _AppLocalizationsDelegate

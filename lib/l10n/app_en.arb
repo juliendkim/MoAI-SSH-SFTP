@@ -269,5 +269,11 @@
         "type": "Object"
       }
     }
-  }
+  },
+  "fileAccessRequired": "File Access Required",
+  "fileAccessRequiredMessage": "This app needs permission to access your files for local file browsing. Please select a folder to grant access.",
+  "selectFolder": "Select Folder",
+  "selectLocalFolder": "Select Local Folder",
+  "fileAccessDenied": "File access was denied",
+  "noFolderSelected": "No folder was selected"
 }

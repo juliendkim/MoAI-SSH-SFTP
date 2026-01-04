@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:moai_ssh_sftp_client/l10n/generated/app_localizations.dart';
+import '../l10n/generated/app_localizations.dart';
 import '../models/host.dart';
 import 'ssh_terminal_screen.dart';
 import 'sftp_explorer_screen.dart';

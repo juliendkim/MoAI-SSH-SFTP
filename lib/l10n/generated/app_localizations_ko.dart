@@ -327,4 +327,23 @@ class AppLocalizationsKo extends AppLocalizations {
   String listingFailed(Object error) {
     return '파일 목록 로드 실패: $error';
   }
+
+  @override
+  String get fileAccessRequired => '파일 접근 권한 필요';
+
+  @override
+  String get fileAccessRequiredMessage =>
+      '로컬 파일 탐색을 위해 파일 접근 권한이 필요합니다. 접근할 폴더를 선택해주세요.';
+
+  @override
+  String get selectFolder => '폴더 선택';
+
+  @override
+  String get selectLocalFolder => '로컬 폴더 선택';
+
+  @override
+  String get fileAccessDenied => '파일 접근이 거부되었습니다';
+
+  @override
+  String get noFolderSelected => '선택된 폴더가 없습니다';
 }
