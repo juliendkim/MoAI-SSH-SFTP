@@ -1481,42 +1481,11 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
                               title: Text(name),
                             ),
                           ),
-                          child: GestureDetector(
-                            onDoubleTap: () {
-                              if (isDirectory) {
-                                _navigateLocal(file.path);
-                              } else {
-                                _confirmUploadFile(file);
-                              }
-                            },
-                            onLongPressStart: (details) {
-                              if (!isSelected) {
-                                setState(() {
-                                  _selectedLocalFiles.clear();
-                                  _selectedLocalFiles.add(file.path);
-                                  _lastSelectedLocalIndex = index;
-                                });
-                              }
-                              _showLocalContextMenu(details.globalPosition, file);
-                            },
-                            onSecondaryTapDown: (details) {
-                              if (!isSelected) {
-                                setState(() {
-                                  _selectedLocalFiles.clear();
-                                  _selectedLocalFiles.add(file.path);
-                                  _lastSelectedLocalIndex = index;
-                                });
-                              }
-                              _showLocalContextMenu(details.globalPosition, file);
-                            },
-                            child: ListTile(
-                              selected: isSelected,
-                              selectedTileColor: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
-                              leading: Icon(
-                                isDirectory ? Icons.folder : Icons.insert_drive_file,
-                                color: isDirectory ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
-                              ),
-                              title: Text(name),
+                          child: Container(
+                            color: isSelected
+                                ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
+                                : null,
+                            child: InkWell(
                               onTap: () {
                                 setState(() {
                                   if (_isShiftPressed && _lastSelectedLocalIndex != null) {
@@ -1540,6 +1509,67 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
                                   }
                                 });
                               },
+                              onDoubleTap: () {
+                                if (isDirectory) {
+                                  _navigateLocal(file.path);
+                                } else {
+                                  _confirmUploadFile(file);
+                                }
+                              },
+                              onLongPress: () {
+                                if (!isSelected) {
+                                  setState(() {
+                                    _selectedLocalFiles.clear();
+                                    _selectedLocalFiles.add(file.path);
+                                    _lastSelectedLocalIndex = index;
+                                  });
+                                }
+                              },
+                              onSecondaryTapDown: (details) {
+                                if (!isSelected) {
+                                  setState(() {
+                                    _selectedLocalFiles.clear();
+                                    _selectedLocalFiles.add(file.path);
+                                    _lastSelectedLocalIndex = index;
+                                  });
+                                }
+                                _showLocalContextMenu(details.globalPosition, file);
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      isDirectory ? Icons.folder : Icons.insert_drive_file,
+                                      color: isDirectory ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        name,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (!isDirectory)
+                                      FutureBuilder<int>(
+                                        future: File(file.path).length(),
+                                        builder: (context, snapshot) {
+                                          if (snapshot.hasData) {
+                                            return Text(
+                                              _formatFileSize(snapshot.data!),
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: theme.colorScheme.onSurfaceVariant,
+                                              ),
+                                            );
+                                          }
+                                          return const SizedBox.shrink();
+                                        },
+                                      ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         )
@@ -1576,42 +1606,11 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
                               title: Text(name),
                             ),
                           ),
-                          child: GestureDetector(
-                            onDoubleTap: () {
-                              if (isDirectory) {
-                                _navigateLocal(file.path);
-                              } else {
-                                _confirmUploadFile(file);
-                              }
-                            },
-                            onLongPressStart: (details) {
-                              if (!isSelected) {
-                                setState(() {
-                                  _selectedLocalFiles.clear();
-                                  _selectedLocalFiles.add(file.path);
-                                  _lastSelectedLocalIndex = index;
-                                });
-                              }
-                              _showLocalContextMenu(details.globalPosition, file);
-                            },
-                            onSecondaryTapDown: (details) {
-                              if (!isSelected) {
-                                setState(() {
-                                  _selectedLocalFiles.clear();
-                                  _selectedLocalFiles.add(file.path);
-                                  _lastSelectedLocalIndex = index;
-                                });
-                              }
-                              _showLocalContextMenu(details.globalPosition, file);
-                            },
-                            child: ListTile(
-                              selected: isSelected,
-                              selectedTileColor: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
-                              leading: Icon(
-                                isDirectory ? Icons.folder : Icons.insert_drive_file,
-                                color: isDirectory ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
-                              ),
-                              title: Text(name),
+                          child: Container(
+                            color: isSelected
+                                ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
+                                : null,
+                            child: InkWell(
                               onTap: () {
                                 setState(() {
                                   if (_isShiftPressed && _lastSelectedLocalIndex != null) {
@@ -1635,6 +1634,67 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
                                   }
                                 });
                               },
+                              onDoubleTap: () {
+                                if (isDirectory) {
+                                  _navigateLocal(file.path);
+                                } else {
+                                  _confirmUploadFile(file);
+                                }
+                              },
+                              onLongPress: () {
+                                if (!isSelected) {
+                                  setState(() {
+                                    _selectedLocalFiles.clear();
+                                    _selectedLocalFiles.add(file.path);
+                                    _lastSelectedLocalIndex = index;
+                                  });
+                                }
+                              },
+                              onSecondaryTapDown: (details) {
+                                if (!isSelected) {
+                                  setState(() {
+                                    _selectedLocalFiles.clear();
+                                    _selectedLocalFiles.add(file.path);
+                                    _lastSelectedLocalIndex = index;
+                                  });
+                                }
+                                _showLocalContextMenu(details.globalPosition, file);
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      isDirectory ? Icons.folder : Icons.insert_drive_file,
+                                      color: isDirectory ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        name,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (!isDirectory)
+                                      FutureBuilder<int>(
+                                        future: File(file.path).length(),
+                                        builder: (context, snapshot) {
+                                          if (snapshot.hasData) {
+                                            return Text(
+                                              _formatFileSize(snapshot.data!),
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: theme.colorScheme.onSurfaceVariant,
+                                              ),
+                                            );
+                                          }
+                                          return const SizedBox.shrink();
+                                        },
+                                      ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         );
@@ -1893,169 +1953,11 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
                               title: Text(file.name),
                             ),
                           ),
-                          child: GestureDetector(
-                        onDoubleTap: () {
-                          if (file.isDirectory) {
-                            _navigateRemote(file.path);
-                          } else {
-                            _confirmDownloadFile(file);
-                          }
-                        },
-                        onLongPressStart: (details) {
-                          // Select the item if not already selected
-                          if (!isSelected) {
-                            setState(() {
-                              _selectedRemoteFiles.clear();
-                              _selectedRemoteFiles.add(file.path);
-                              _lastSelectedRemoteIndex = index;
-                            });
-                          }
-                          _showRemoteContextMenu(details.globalPosition, file);
-                        },
-                        onSecondaryTapDown: (details) {
-                          // Select the item if not already selected
-                          if (!isSelected) {
-                            setState(() {
-                              _selectedRemoteFiles.clear();
-                              _selectedRemoteFiles.add(file.path);
-                              _lastSelectedRemoteIndex = index;
-                            });
-                          }
-                          _showRemoteContextMenu(details.globalPosition, file);
-                        },
-                        child: ListTile(
-                          selected: isSelected,
-                          selectedTileColor: theme.colorScheme.secondaryContainer.withValues(alpha: 0.3),
-                          leading: Icon(iconData, color: iconColor),
-                          title: Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  file.name,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              if (file.isSymlink)
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 4),
-                                  child: Icon(
-                                    Icons.arrow_forward,
-                                    size: 12,
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                            ],
-                          ),
-                          subtitle: !file.isDirectory
-                              ? Text(_formatFileSize(file.size))
-                              : null,
-                          onTap: () {
-                            setState(() {
-                              if (_isShiftPressed && _lastSelectedRemoteIndex != null) {
-                                final start = _lastSelectedRemoteIndex! < index ? _lastSelectedRemoteIndex! : index;
-                                final end = _lastSelectedRemoteIndex! < index ? index : _lastSelectedRemoteIndex!;
-                                for (int i = start; i <= end; i++) {
-                                  _selectedRemoteFiles.add(filteredRemoteFiles[i].path);
-                                }
-                                _lastSelectedRemoteIndex = index;
-                              } else if (_isControlPressed) {
-                                if (isSelected) {
-                                  _selectedRemoteFiles.remove(file.path);
-                                } else {
-                                  _selectedRemoteFiles.add(file.path);
-                                }
-                                _lastSelectedRemoteIndex = index;
-                              } else {
-                                _selectedRemoteFiles.clear();
-                                _selectedRemoteFiles.add(file.path);
-                                _lastSelectedRemoteIndex = index;
-                              }
-                            });
-                          },
-                        ),
-                      ),
-                    )
-                    : LongPressDraggable<List<SftpFileInfo>>(
-                        data: selectedFiles,
-                        delay: const Duration(milliseconds: 500),
-                        feedback: Material(
-                          elevation: 4,
                           child: Container(
-                            padding: const EdgeInsets.all(8),
-                            color: theme.colorScheme.secondaryContainer,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(iconData, color: theme.colorScheme.secondary),
-                                const SizedBox(width: 8),
-                                Text(selectedFiles.length > 1 ? '${selectedFiles.length} items' : file.name),
-                              ],
-                            ),
-                          ),
-                        ),
-                        childWhenDragging: Opacity(
-                          opacity: 0.5,
-                          child: ListTile(
-                            selected: isSelected,
-                            selectedTileColor: theme.colorScheme.secondaryContainer.withValues(alpha: 0.3),
-                            leading: Icon(iconData, color: iconColor),
-                            title: Text(file.name),
-                          ),
-                        ),
-                        child: GestureDetector(
-                          onDoubleTap: () {
-                            if (file.isDirectory) {
-                              _navigateRemote(file.path);
-                            } else {
-                              _confirmDownloadFile(file);
-                            }
-                          },
-                          onLongPressStart: (details) {
-                            if (!isSelected) {
-                              setState(() {
-                                _selectedRemoteFiles.clear();
-                                _selectedRemoteFiles.add(file.path);
-                                _lastSelectedRemoteIndex = index;
-                              });
-                            }
-                            _showRemoteContextMenu(details.globalPosition, file);
-                          },
-                          onSecondaryTapDown: (details) {
-                            if (!isSelected) {
-                              setState(() {
-                                _selectedRemoteFiles.clear();
-                                _selectedRemoteFiles.add(file.path);
-                                _lastSelectedRemoteIndex = index;
-                              });
-                            }
-                            _showRemoteContextMenu(details.globalPosition, file);
-                          },
-                          child: ListTile(
-                            selected: isSelected,
-                            selectedTileColor: theme.colorScheme.secondaryContainer.withValues(alpha: 0.3),
-                            leading: Icon(iconData, color: iconColor),
-                            title: Row(
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    file.name,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                if (file.isSymlink)
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 4),
-                                    child: Icon(
-                                      Icons.arrow_forward,
-                                      size: 12,
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            subtitle: !file.isDirectory
-                                ? Text(_formatFileSize(file.size))
-                                : null,
+                          color: isSelected
+                              ? theme.colorScheme.secondaryContainer.withValues(alpha: 0.3)
+                              : null,
+                          child: InkWell(
                             onTap: () {
                               setState(() {
                                 if (_isShiftPressed && _lastSelectedRemoteIndex != null) {
@@ -2079,6 +1981,212 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
                                 }
                               });
                             },
+                            onDoubleTap: () {
+                              if (file.isDirectory) {
+                                _navigateRemote(file.path);
+                              } else {
+                                _confirmDownloadFile(file);
+                              }
+                            },
+                            onLongPress: () {
+                              if (!isSelected) {
+                                setState(() {
+                                  _selectedRemoteFiles.clear();
+                                  _selectedRemoteFiles.add(file.path);
+                                  _lastSelectedRemoteIndex = index;
+                                });
+                              }
+                            },
+                            onSecondaryTapDown: (details) {
+                              if (!isSelected) {
+                                setState(() {
+                                  _selectedRemoteFiles.clear();
+                                  _selectedRemoteFiles.add(file.path);
+                                  _lastSelectedRemoteIndex = index;
+                                });
+                              }
+                              _showRemoteContextMenu(details.globalPosition, file);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              child: Row(
+                              children: [
+                                Icon(iconData, color: iconColor, size: 20),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          file.name,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      if (file.isSymlink)
+                                        Padding(
+                                          padding: const EdgeInsets.only(left: 4),
+                                          child: Icon(
+                                            Icons.arrow_forward,
+                                            size: 12,
+                                            color: theme.colorScheme.onSurfaceVariant,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                if (!file.isDirectory)
+                                  Text(
+                                    _formatFileSize(file.size),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                    : LongPressDraggable<List<SftpFileInfo>>(
+                        data: selectedFiles,
+                        delay: const Duration(milliseconds: 500),
+                        feedback: Material(
+                          elevation: 4,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            color: theme.colorScheme.secondaryContainer,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(iconData, color: theme.colorScheme.secondary),
+                                const SizedBox(width: 8),
+                                Text(selectedFiles.length > 1 ? '${selectedFiles.length} items' : file.name),
+                              ],
+                            ),
+                          ),
+                        ),
+                        childWhenDragging: Opacity(
+                          opacity: 0.5,
+                          child: Container(
+                            color: isSelected
+                                ? theme.colorScheme.secondaryContainer.withValues(alpha: 0.3)
+                                : null,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            child: Row(
+                              children: [
+                                Icon(iconData, color: iconColor, size: 20),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    file.name,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (!file.isDirectory)
+                                  Text(
+                                    _formatFileSize(file.size),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        child: Container(
+                          color: isSelected
+                              ? theme.colorScheme.secondaryContainer.withValues(alpha: 0.3)
+                              : null,
+                          child: InkWell(
+                            onTap: () {
+                              setState(() {
+                                if (_isShiftPressed && _lastSelectedRemoteIndex != null) {
+                                  final start = _lastSelectedRemoteIndex! < index ? _lastSelectedRemoteIndex! : index;
+                                  final end = _lastSelectedRemoteIndex! < index ? index : _lastSelectedRemoteIndex!;
+                                  for (int i = start; i <= end; i++) {
+                                    _selectedRemoteFiles.add(filteredRemoteFiles[i].path);
+                                  }
+                                  _lastSelectedRemoteIndex = index;
+                                } else if (_isControlPressed) {
+                                  if (isSelected) {
+                                    _selectedRemoteFiles.remove(file.path);
+                                  } else {
+                                    _selectedRemoteFiles.add(file.path);
+                                  }
+                                  _lastSelectedRemoteIndex = index;
+                                } else {
+                                  _selectedRemoteFiles.clear();
+                                  _selectedRemoteFiles.add(file.path);
+                                  _lastSelectedRemoteIndex = index;
+                                }
+                              });
+                            },
+                            onDoubleTap: () {
+                              if (file.isDirectory) {
+                                _navigateRemote(file.path);
+                              } else {
+                                _confirmDownloadFile(file);
+                              }
+                            },
+                            onLongPress: () {
+                              if (!isSelected) {
+                                setState(() {
+                                  _selectedRemoteFiles.clear();
+                                  _selectedRemoteFiles.add(file.path);
+                                  _lastSelectedRemoteIndex = index;
+                                });
+                              }
+                            },
+                            onSecondaryTapDown: (details) {
+                              if (!isSelected) {
+                                setState(() {
+                                  _selectedRemoteFiles.clear();
+                                  _selectedRemoteFiles.add(file.path);
+                                  _lastSelectedRemoteIndex = index;
+                                });
+                              }
+                              _showRemoteContextMenu(details.globalPosition, file);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              child: Row(
+                                children: [
+                                  Icon(iconData, color: iconColor, size: 20),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Row(
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            file.name,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        if (file.isSymlink)
+                                          Padding(
+                                            padding: const EdgeInsets.only(left: 4),
+                                            child: Icon(
+                                              Icons.arrow_forward,
+                                              size: 12,
+                                              color: theme.colorScheme.onSurfaceVariant,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (!file.isDirectory)
+                                    Text(
+                                      _formatFileSize(file.size),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: theme.colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       );

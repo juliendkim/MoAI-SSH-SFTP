@@ -7,6 +7,16 @@ class AppDelegate: FlutterAppDelegate {
     return false
   }
 
+  override func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+    if !flag {
+      // 모든 창이 닫혀 있으면 메인 창을 다시 표시
+      if let window = mainFlutterWindow {
+        window.makeKeyAndOrderFront(self)
+      }
+    }
+    return true
+  }
+
   override func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
     return true
   }
