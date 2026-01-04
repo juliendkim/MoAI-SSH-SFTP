@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:file_picker/file_picker.dart';
 import '../l10n/generated/app_localizations.dart';
 import '../models/host.dart';
 import '../services/ssh_service.dart';
@@ -166,50 +165,11 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
         _localRootPath = downloads?.path ?? (await getApplicationDocumentsDirectory()).path;
         initialLocalPath = _localRootPath;
       } else {
-        // Desktop (macOS/Windows/Linux)
-        // For macOS sandboxed apps, we MUST request user permission to access directories
-        if (Platform.isMacOS) {
-          // Show dialog to inform user about folder selection
-          if (!mounted) return;
-
-          final shouldSelect = await showDialog<bool>(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) => AlertDialog(
-              title: Text(l10n.fileAccessRequired),
-              content: Text(l10n.fileAccessRequiredMessage),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: Text(l10n.selectFolder),
-                ),
-              ],
-            ),
-          );
-
-          if (shouldSelect != true) {
-            throw Exception(l10n.fileAccessDenied);
-          }
-
-          // Request directory access using file_picker
-          final selectedDirectory = await FilePicker.platform.getDirectoryPath(
-            dialogTitle: l10n.selectLocalFolder,
-            lockParentWindow: true,
-          );
-
-          if (selectedDirectory == null || selectedDirectory.isEmpty) {
-            throw Exception(l10n.noFolderSelected);
-          }
-
-          initialLocalPath = selectedDirectory;
-          _localRootPath = selectedDirectory;
-        } else {
-          // Windows/Linux: Use home directory
-          initialLocalPath = Platform.environment['HOME'] ??
-                          Platform.environment['USERPROFILE'] ??
-                          '';
-          _localRootPath = initialLocalPath;
-        }
+        // Desktop (macOS/Windows/Linux) - sandbox is disabled, direct access
+        initialLocalPath = Platform.environment['HOME'] ??
+                        Platform.environment['USERPROFILE'] ??
+                        '';
+        _localRootPath = initialLocalPath;
       }
       _localPath = initialLocalPath;
 
@@ -1427,6 +1387,13 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
                       ],
                     ),
                   IconButton(
+                    icon: Icon(Icons.refresh, size: 20, color: theme.colorScheme.primary),
+                    onPressed: () {
+                      _loadLocalFiles();
+                    },
+                    tooltip: 'Refresh',
+                  ),
+                  IconButton(
                     icon: Icon(Icons.arrow_upward, size: 20, color: theme.colorScheme.primary),
                     onPressed: () {
                       if (_localPath.isNotEmpty) {
@@ -1481,106 +1448,196 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
                         ? filteredLocalFiles.where((f) => _selectedLocalFiles.contains(f.path)).toList()
                         : [file];
 
-                    return LongPressDraggable<List<FileSystemEntity>>(
-                      data: selectedFiles,
-                      delay: const Duration(milliseconds: 500),
-                      feedback: Material(
-                        elevation: 4,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          color: theme.colorScheme.primaryContainer,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                isDirectory ? Icons.folder : Icons.insert_drive_file,
-                                color: theme.colorScheme.primary,
+                    return Platform.isMacOS || Platform.isWindows || Platform.isLinux
+                      ? Draggable<List<FileSystemEntity>>(
+                          data: selectedFiles,
+                          feedback: Material(
+                            elevation: 4,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              color: theme.colorScheme.primaryContainer,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    isDirectory ? Icons.folder : Icons.insert_drive_file,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(selectedFiles.length > 1 ? '${selectedFiles.length} items' : name),
+                                ],
                               ),
-                              const SizedBox(width: 8),
-                              Text(selectedFiles.length > 1 ? '${selectedFiles.length} items' : name),
-                            ],
+                            ),
                           ),
-                        ),
-                      ),
-                      childWhenDragging: Opacity(
-                        opacity: 0.5,
-                        child: ListTile(
-                          selected: isSelected,
-                          selectedTileColor: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
-                          leading: Icon(
-                            isDirectory ? Icons.folder : Icons.insert_drive_file,
-                            color: isDirectory ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
+                          childWhenDragging: Opacity(
+                            opacity: 0.5,
+                            child: ListTile(
+                              selected: isSelected,
+                              selectedTileColor: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+                              leading: Icon(
+                                isDirectory ? Icons.folder : Icons.insert_drive_file,
+                                color: isDirectory ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
+                              ),
+                              title: Text(name),
+                            ),
                           ),
-                          title: Text(name),
-                        ),
-                      ),
-                      child: GestureDetector(
-                        onDoubleTap: () {
-                          if (isDirectory) {
-                            _navigateLocal(file.path);
-                          } else {
-                            _confirmUploadFile(file);
-                          }
-                        },
-                        onLongPressStart: (details) {
-                          // Select the item if not already selected
-                          if (!isSelected) {
-                            setState(() {
-                              _selectedLocalFiles.clear();
-                              _selectedLocalFiles.add(file.path);
-                              _lastSelectedLocalIndex = index;
-                            });
-                          }
-                          _showLocalContextMenu(details.globalPosition, file);
-                        },
-                        onSecondaryTapDown: (details) {
-                          // Select the item if not already selected
-                          if (!isSelected) {
-                            setState(() {
-                              _selectedLocalFiles.clear();
-                              _selectedLocalFiles.add(file.path);
-                              _lastSelectedLocalIndex = index;
-                            });
-                          }
-                          _showLocalContextMenu(details.globalPosition, file);
-                        },
-                        child: ListTile(
-                          selected: isSelected,
-                          selectedTileColor: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
-                          leading: Icon(
-                            isDirectory ? Icons.folder : Icons.insert_drive_file,
-                            color: isDirectory ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
+                          child: GestureDetector(
+                            onDoubleTap: () {
+                              if (isDirectory) {
+                                _navigateLocal(file.path);
+                              } else {
+                                _confirmUploadFile(file);
+                              }
+                            },
+                            onLongPressStart: (details) {
+                              if (!isSelected) {
+                                setState(() {
+                                  _selectedLocalFiles.clear();
+                                  _selectedLocalFiles.add(file.path);
+                                  _lastSelectedLocalIndex = index;
+                                });
+                              }
+                              _showLocalContextMenu(details.globalPosition, file);
+                            },
+                            onSecondaryTapDown: (details) {
+                              if (!isSelected) {
+                                setState(() {
+                                  _selectedLocalFiles.clear();
+                                  _selectedLocalFiles.add(file.path);
+                                  _lastSelectedLocalIndex = index;
+                                });
+                              }
+                              _showLocalContextMenu(details.globalPosition, file);
+                            },
+                            child: ListTile(
+                              selected: isSelected,
+                              selectedTileColor: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+                              leading: Icon(
+                                isDirectory ? Icons.folder : Icons.insert_drive_file,
+                                color: isDirectory ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
+                              ),
+                              title: Text(name),
+                              onTap: () {
+                                setState(() {
+                                  if (_isShiftPressed && _lastSelectedLocalIndex != null) {
+                                    final start = _lastSelectedLocalIndex! < index ? _lastSelectedLocalIndex! : index;
+                                    final end = _lastSelectedLocalIndex! < index ? index : _lastSelectedLocalIndex!;
+                                    for (int i = start; i <= end; i++) {
+                                      _selectedLocalFiles.add(filteredLocalFiles[i].path);
+                                    }
+                                    _lastSelectedLocalIndex = index;
+                                  } else if (_isControlPressed) {
+                                    if (isSelected) {
+                                      _selectedLocalFiles.remove(file.path);
+                                    } else {
+                                      _selectedLocalFiles.add(file.path);
+                                    }
+                                    _lastSelectedLocalIndex = index;
+                                  } else {
+                                    _selectedLocalFiles.clear();
+                                    _selectedLocalFiles.add(file.path);
+                                    _lastSelectedLocalIndex = index;
+                                  }
+                                });
+                              },
+                            ),
                           ),
-                          title: Text(name),
-                          onTap: () {
-                            setState(() {
-                                                              if (_isShiftPressed && _lastSelectedLocalIndex != null) {
-                                                                // Shift+Click: Range selection
-                                                                final start = _lastSelectedLocalIndex! < index ? _lastSelectedLocalIndex! : index;
-                                                                final end = _lastSelectedLocalIndex! < index ? index : _lastSelectedLocalIndex!;
-                              
-                                                                for (int i = start; i <= end; i++) {
-                                                                  _selectedLocalFiles.add(filteredLocalFiles[i].path);
-                                                                }
-                                                                _lastSelectedLocalIndex = index;
-                                                              } else if (_isControlPressed) {
-                                                                // Ctrl+Click: Toggle selection
-                                                                if (isSelected) {
-                                                                  _selectedLocalFiles.remove(file.path);
-                                                                } else {
-                                                                  _selectedLocalFiles.add(file.path);
-                                                                }
-                                                                _lastSelectedLocalIndex = index;
-                                                              } else {
-                                                                // Regular Click: Single selection
-                                                                _selectedLocalFiles.clear();
-                                                                _selectedLocalFiles.add(file.path);
-                                                                _lastSelectedLocalIndex = index;
-                                                              }                            });
-                          },
-                        ),
-                      ),
-                    );
+                        )
+                      : LongPressDraggable<List<FileSystemEntity>>(
+                          data: selectedFiles,
+                          delay: const Duration(milliseconds: 500),
+                          feedback: Material(
+                            elevation: 4,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              color: theme.colorScheme.primaryContainer,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    isDirectory ? Icons.folder : Icons.insert_drive_file,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(selectedFiles.length > 1 ? '${selectedFiles.length} items' : name),
+                                ],
+                              ),
+                            ),
+                          ),
+                          childWhenDragging: Opacity(
+                            opacity: 0.5,
+                            child: ListTile(
+                              selected: isSelected,
+                              selectedTileColor: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+                              leading: Icon(
+                                isDirectory ? Icons.folder : Icons.insert_drive_file,
+                                color: isDirectory ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
+                              ),
+                              title: Text(name),
+                            ),
+                          ),
+                          child: GestureDetector(
+                            onDoubleTap: () {
+                              if (isDirectory) {
+                                _navigateLocal(file.path);
+                              } else {
+                                _confirmUploadFile(file);
+                              }
+                            },
+                            onLongPressStart: (details) {
+                              if (!isSelected) {
+                                setState(() {
+                                  _selectedLocalFiles.clear();
+                                  _selectedLocalFiles.add(file.path);
+                                  _lastSelectedLocalIndex = index;
+                                });
+                              }
+                              _showLocalContextMenu(details.globalPosition, file);
+                            },
+                            onSecondaryTapDown: (details) {
+                              if (!isSelected) {
+                                setState(() {
+                                  _selectedLocalFiles.clear();
+                                  _selectedLocalFiles.add(file.path);
+                                  _lastSelectedLocalIndex = index;
+                                });
+                              }
+                              _showLocalContextMenu(details.globalPosition, file);
+                            },
+                            child: ListTile(
+                              selected: isSelected,
+                              selectedTileColor: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+                              leading: Icon(
+                                isDirectory ? Icons.folder : Icons.insert_drive_file,
+                                color: isDirectory ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
+                              ),
+                              title: Text(name),
+                              onTap: () {
+                                setState(() {
+                                  if (_isShiftPressed && _lastSelectedLocalIndex != null) {
+                                    final start = _lastSelectedLocalIndex! < index ? _lastSelectedLocalIndex! : index;
+                                    final end = _lastSelectedLocalIndex! < index ? index : _lastSelectedLocalIndex!;
+                                    for (int i = start; i <= end; i++) {
+                                      _selectedLocalFiles.add(filteredLocalFiles[i].path);
+                                    }
+                                    _lastSelectedLocalIndex = index;
+                                  } else if (_isControlPressed) {
+                                    if (isSelected) {
+                                      _selectedLocalFiles.remove(file.path);
+                                    } else {
+                                      _selectedLocalFiles.add(file.path);
+                                    }
+                                    _lastSelectedLocalIndex = index;
+                                  } else {
+                                    _selectedLocalFiles.clear();
+                                    _selectedLocalFiles.add(file.path);
+                                    _lastSelectedLocalIndex = index;
+                                  }
+                                });
+                              },
+                            ),
+                          ),
+                        );
                   },
                 ),
               );
@@ -1727,6 +1784,13 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
                       ],
                     ),
                   IconButton(
+                    icon: Icon(Icons.refresh, size: 20, color: theme.colorScheme.secondary),
+                    onPressed: () {
+                      _loadRemoteFiles();
+                    },
+                    tooltip: 'Refresh',
+                  ),
+                  IconButton(
                     icon: Icon(Icons.arrow_upward, size: 20, color: theme.colorScheme.secondary),
                     onPressed: () {
                       if (_remotePath.isEmpty) {
@@ -1802,34 +1866,34 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
                         ? filteredRemoteFiles.where((f) => _selectedRemoteFiles.contains(f.path)).toList()
                         : [file];
 
-                    return LongPressDraggable<List<SftpFileInfo>>(
-                      data: selectedFiles,
-                      delay: const Duration(milliseconds: 500),
-                      feedback: Material(
-                        elevation: 4,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          color: theme.colorScheme.secondaryContainer,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(iconData, color: theme.colorScheme.secondary),
-                              const SizedBox(width: 8),
-                              Text(selectedFiles.length > 1 ? '${selectedFiles.length} items' : file.name),
-                            ],
+                    return Platform.isMacOS || Platform.isWindows || Platform.isLinux
+                      ? Draggable<List<SftpFileInfo>>(
+                          data: selectedFiles,
+                          feedback: Material(
+                            elevation: 4,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              color: theme.colorScheme.secondaryContainer,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(iconData, color: theme.colorScheme.secondary),
+                                  const SizedBox(width: 8),
+                                  Text(selectedFiles.length > 1 ? '${selectedFiles.length} items' : file.name),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                      childWhenDragging: Opacity(
-                        opacity: 0.5,
-                        child: ListTile(
-                          selected: isSelected,
-                          selectedTileColor: theme.colorScheme.secondaryContainer.withValues(alpha: 0.3),
-                          leading: Icon(iconData, color: iconColor),
-                          title: Text(file.name),
-                        ),
-                      ),
-                      child: GestureDetector(
+                          childWhenDragging: Opacity(
+                            opacity: 0.5,
+                            child: ListTile(
+                              selected: isSelected,
+                              selectedTileColor: theme.colorScheme.secondaryContainer.withValues(alpha: 0.3),
+                              leading: Icon(iconData, color: iconColor),
+                              title: Text(file.name),
+                            ),
+                          ),
+                          child: GestureDetector(
                         onDoubleTap: () {
                           if (file.isDirectory) {
                             _navigateRemote(file.path);
@@ -1887,33 +1951,137 @@ class SFTPExplorerScreenState extends State<SFTPExplorerScreen> {
                               : null,
                           onTap: () {
                             setState(() {
-                                                              if (_isShiftPressed && _lastSelectedRemoteIndex != null) {
-                                                                // Shift+Click: Range selection
-                                                                final start = _lastSelectedRemoteIndex! < index ? _lastSelectedRemoteIndex! : index;
-                                                                final end = _lastSelectedRemoteIndex! < index ? index : _lastSelectedRemoteIndex!;
-                              
-                                                                for (int i = start; i <= end; i++) {
-                                                                  _selectedRemoteFiles.add(filteredRemoteFiles[i].path);
-                                                                }
-                                                                _lastSelectedRemoteIndex = index;
-                                                              } else if (_isControlPressed) {
-                                                                // Ctrl+Click: Toggle selection
-                                                                if (isSelected) {
-                                                                  _selectedRemoteFiles.remove(file.path);
-                                                                } else {
-                                                                  _selectedRemoteFiles.add(file.path);
-                                                                }
-                                                                _lastSelectedRemoteIndex = index;
-                                                              } else {
-                                                                // Regular Click: Single selection
-                                                                _selectedRemoteFiles.clear();
-                                                                _selectedRemoteFiles.add(file.path);
-                                                                _lastSelectedRemoteIndex = index;
-                                                              }                            });
+                              if (_isShiftPressed && _lastSelectedRemoteIndex != null) {
+                                final start = _lastSelectedRemoteIndex! < index ? _lastSelectedRemoteIndex! : index;
+                                final end = _lastSelectedRemoteIndex! < index ? index : _lastSelectedRemoteIndex!;
+                                for (int i = start; i <= end; i++) {
+                                  _selectedRemoteFiles.add(filteredRemoteFiles[i].path);
+                                }
+                                _lastSelectedRemoteIndex = index;
+                              } else if (_isControlPressed) {
+                                if (isSelected) {
+                                  _selectedRemoteFiles.remove(file.path);
+                                } else {
+                                  _selectedRemoteFiles.add(file.path);
+                                }
+                                _lastSelectedRemoteIndex = index;
+                              } else {
+                                _selectedRemoteFiles.clear();
+                                _selectedRemoteFiles.add(file.path);
+                                _lastSelectedRemoteIndex = index;
+                              }
+                            });
                           },
                         ),
                       ),
-                    );
+                    )
+                    : LongPressDraggable<List<SftpFileInfo>>(
+                        data: selectedFiles,
+                        delay: const Duration(milliseconds: 500),
+                        feedback: Material(
+                          elevation: 4,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            color: theme.colorScheme.secondaryContainer,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(iconData, color: theme.colorScheme.secondary),
+                                const SizedBox(width: 8),
+                                Text(selectedFiles.length > 1 ? '${selectedFiles.length} items' : file.name),
+                              ],
+                            ),
+                          ),
+                        ),
+                        childWhenDragging: Opacity(
+                          opacity: 0.5,
+                          child: ListTile(
+                            selected: isSelected,
+                            selectedTileColor: theme.colorScheme.secondaryContainer.withValues(alpha: 0.3),
+                            leading: Icon(iconData, color: iconColor),
+                            title: Text(file.name),
+                          ),
+                        ),
+                        child: GestureDetector(
+                          onDoubleTap: () {
+                            if (file.isDirectory) {
+                              _navigateRemote(file.path);
+                            } else {
+                              _confirmDownloadFile(file);
+                            }
+                          },
+                          onLongPressStart: (details) {
+                            if (!isSelected) {
+                              setState(() {
+                                _selectedRemoteFiles.clear();
+                                _selectedRemoteFiles.add(file.path);
+                                _lastSelectedRemoteIndex = index;
+                              });
+                            }
+                            _showRemoteContextMenu(details.globalPosition, file);
+                          },
+                          onSecondaryTapDown: (details) {
+                            if (!isSelected) {
+                              setState(() {
+                                _selectedRemoteFiles.clear();
+                                _selectedRemoteFiles.add(file.path);
+                                _lastSelectedRemoteIndex = index;
+                              });
+                            }
+                            _showRemoteContextMenu(details.globalPosition, file);
+                          },
+                          child: ListTile(
+                            selected: isSelected,
+                            selectedTileColor: theme.colorScheme.secondaryContainer.withValues(alpha: 0.3),
+                            leading: Icon(iconData, color: iconColor),
+                            title: Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    file.name,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (file.isSymlink)
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 4),
+                                    child: Icon(
+                                      Icons.arrow_forward,
+                                      size: 12,
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            subtitle: !file.isDirectory
+                                ? Text(_formatFileSize(file.size))
+                                : null,
+                            onTap: () {
+                              setState(() {
+                                if (_isShiftPressed && _lastSelectedRemoteIndex != null) {
+                                  final start = _lastSelectedRemoteIndex! < index ? _lastSelectedRemoteIndex! : index;
+                                  final end = _lastSelectedRemoteIndex! < index ? index : _lastSelectedRemoteIndex!;
+                                  for (int i = start; i <= end; i++) {
+                                    _selectedRemoteFiles.add(filteredRemoteFiles[i].path);
+                                  }
+                                  _lastSelectedRemoteIndex = index;
+                                } else if (_isControlPressed) {
+                                  if (isSelected) {
+                                    _selectedRemoteFiles.remove(file.path);
+                                  } else {
+                                    _selectedRemoteFiles.add(file.path);
+                                  }
+                                  _lastSelectedRemoteIndex = index;
+                                } else {
+                                  _selectedRemoteFiles.clear();
+                                  _selectedRemoteFiles.add(file.path);
+                                  _lastSelectedRemoteIndex = index;
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                      );
                   },
                 ),
               );

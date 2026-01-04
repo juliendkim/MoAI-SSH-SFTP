@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:dartssh2/dartssh2.dart';
 
 /// Represents a file or directory on the remote SFTP server.
@@ -186,7 +187,6 @@ class SFTPService {
     try {
       final localFile = File(localPath);
       final fileSize = await localFile.length();
-      final content = await localFile.readAsBytes();
 
       remoteFile = await _sftp!.open(
         remotePath,
@@ -195,19 +195,15 @@ class SFTPService {
             SftpFileOpenMode.truncate,
       );
 
-      // Write in chunks to report progress
-      const chunkSize = 32768; // 32KB chunks
+      // Create stream from file and write
+      final stream = localFile.openRead();
       int totalSent = 0;
 
-      for (int i = 0; i < content.length; i += chunkSize) {
-        final end = (i + chunkSize < content.length) ? i + chunkSize : content.length;
-        final chunk = content.sublist(i, end);
-
-        await remoteFile.writeBytes(chunk);
+      await remoteFile.write(stream.map((chunk) {
         totalSent += chunk.length;
-
         onProgress?.call(totalSent, fileSize);
-      }
+        return Uint8List.fromList(chunk);
+      }));
     } catch (e) {
       rethrow;
     } finally {
